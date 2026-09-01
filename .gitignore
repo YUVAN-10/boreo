@@ -20,7 +20,9 @@ dist-ssr
 build
 .firebase
 
-# Editor & OS files
+# Editor, Tooling & OS files
+.marscode
+.marscode/*
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -31,9 +33,12 @@ build
 *.sln
 *.sw?
 
-# Environment variables
-*.local
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Security & Secret Configs
+.env
+.env.*
+firestore.rules
+firebase.rules
+
+# Temporary & Scratch scripts
+scratch_*.js
+*.scratch.js
