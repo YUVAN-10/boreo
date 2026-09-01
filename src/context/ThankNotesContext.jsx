@@ -3,10 +3,37 @@ import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { createThankNote } from "../services/thankNoteService";
 
+const INITIAL_DUMMY_NOTES = [
+  {
+    id: "boreo-tn-1",
+    fromMemberId: "boreo-mem-1",
+    fromMemberName: "Rajesh Sharma",
+    fromName: "Rajesh Sharma",
+    toMemberId: "boreo-mem-2",
+    toMemberName: "Anitha V",
+    toName: "Anitha V",
+    value: 150000,
+    comments: "Thank you for the tech project referral!",
+    createdAt: new Date(),
+  },
+  {
+    id: "boreo-tn-2",
+    fromMemberId: "boreo-mem-2",
+    fromMemberName: "Anitha V",
+    fromName: "Anitha V",
+    toMemberId: "boreo-mem-1",
+    toMemberName: "Rajesh Sharma",
+    toName: "Rajesh Sharma",
+    value: 75000,
+    comments: "Thank you for the trading software contract!",
+    createdAt: new Date(),
+  },
+];
+
 const ThankNotesContext = createContext(null);
 
 export function ThankNotesProvider({ children }) {
-  const [thankNotes, setThankNotes] = useState([]);
+  const [thankNotes, setThankNotes] = useState(INITIAL_DUMMY_NOTES);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,7 +45,9 @@ export function ThankNotesProvider({ children }) {
         snapshot.forEach((docSnap) => {
           notesData.push({ id: docSnap.id, ...docSnap.data() });
         });
-        setThankNotes(notesData);
+        if (notesData.length > 0) {
+          setThankNotes(notesData);
+        }
         setLoading(false);
       },
       (error) => {

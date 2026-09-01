@@ -4,21 +4,21 @@ import { validateMeetingForm } from "../../utils/meetingValidation";
 
 function fieldClasses(hasError) {
   return [
-    "w-full rounded-lg border bg-bg px-3 py-2.5 text-sm text-text placeholder:text-text-secondary focus:outline-none focus:ring-1",
+    "w-full rounded-xl border bg-gray-50/50 px-3.5 py-2.5 text-xs font-medium text-gray-800 placeholder:text-gray-400 focus:bg-white focus:outline-none transition-all",
     hasError
-      ? "border-danger focus:border-danger focus:ring-danger"
-      : "border-border focus:border-primary focus:ring-primary",
+      ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+      : "border-gray-200 focus:border-[#EA580C] focus:ring-1 focus:ring-[#EA580C]",
   ].join(" ");
 }
 
 function Field({ label, error, full, children }) {
   return (
     <div className={full ? "sm:col-span-2" : ""}>
-      <label className="mb-1.5 block text-sm font-medium text-text">
-        {label} <span className="text-danger">*</span>
+      <label className="mb-1.5 block text-xs font-bold text-[#1E3A8A]">
+        {label} <span className="text-red-500">*</span>
       </label>
       {children}
-      {error && <p className="mt-1 text-xs text-danger">{error}</p>}
+      {error && <p className="mt-1 text-[11px] font-semibold text-red-600">{error}</p>}
     </div>
   );
 }
@@ -42,15 +42,15 @@ export default function MeetingForm({ initialData, onSubmit, onCancel, submitLab
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-6">
-      <div className="rounded-xl border border-border bg-card p-5 shadow-sm animate-fade-in">
-        <h2 className="mb-4 text-sm font-semibold text-secondary">Meeting Details</h2>
+      <div className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-xs animate-fade-in">
+        <h2 className="mb-4 text-base font-bold text-[#1E3A8A]">Meeting Details</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Meeting Name" error={errors.meetingName} full>
             <input
               type="text"
               value={formData.meetingName}
               onChange={handleChange("meetingName")}
-              placeholder="e.g. RMBF Weekly Meeting"
+              placeholder="e.g. Weekly Regular Meeting"
               className={fieldClasses(errors.meetingName)}
             />
           </Field>
@@ -78,10 +78,21 @@ export default function MeetingForm({ initialData, onSubmit, onCancel, submitLab
               type="text"
               value={formData.place}
               onChange={handleChange("place")}
-              placeholder="e.g. RMBF Hall, Erode"
+              placeholder="e.g. Hotel Grand, Erode"
               className={fieldClasses(errors.place)}
             />
           </Field>
+
+          <div className="sm:col-span-2">
+            <label className="mb-1.5 block text-xs font-bold text-[#1E3A8A]">Description / Agenda</label>
+            <textarea
+              rows={3}
+              value={formData.description || ""}
+              onChange={handleChange("description")}
+              placeholder="Optional meeting details or agenda notes..."
+              className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-3.5 py-2.5 text-xs font-medium text-gray-800 placeholder:text-gray-400 focus:bg-white focus:border-[#EA580C] focus:outline-none transition-all"
+            />
+          </div>
         </div>
       </div>
 
@@ -90,14 +101,14 @@ export default function MeetingForm({ initialData, onSubmit, onCancel, submitLab
           type="button"
           disabled={isSubmitting}
           onClick={onCancel}
-          className="rounded-lg border border-border px-5 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-xl border border-[#1E3A8A] px-5 py-2.5 text-xs font-semibold text-[#1E3A8A] hover:bg-blue-50 disabled:opacity-50 transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center justify-center gap-2 rounded-xl bg-[#EA580C] px-6 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#c2410c] disabled:opacity-50 transition-all"
         >
           {isSubmitting ? (
             <>

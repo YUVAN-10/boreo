@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Settings as SettingsIcon, Plus, Trash2, Loader2 } from "lucide-react";
 import { useMasters } from "../context/MastersContext";
-import PointsMasterCard from "../components/settings/PointsMasterCard";
 import MeetingLimitsCard from "../components/settings/MeetingLimitsCard";
 import TermCard from "../components/settings/TermCard";
 
@@ -25,48 +24,46 @@ function MasterList({ title, items, category, onAdd, onRemove }) {
   };
 
   return (
-    <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden flex flex-col h-full">
-      <div className="bg-bg px-4 py-3 border-b border-border">
-        <h3 className="text-sm font-semibold text-secondary">{title}</h3>
+    <div className="rounded-2xl border border-gray-200/80 bg-white shadow-xs overflow-hidden flex flex-col h-full">
+      <div className="bg-gray-50/70 px-4 py-3 border-b border-gray-100">
+        <h3 className="text-xs font-bold text-[#1E3A8A] uppercase tracking-wider">{title}</h3>
       </div>
-      
+
       <div className="p-4 flex-1 flex flex-col gap-4">
         <form onSubmit={handleAdd} className="flex gap-2">
           <input
             type="text"
             value={newValue}
             onChange={(e) => setNewValue(e.target.value)}
-            placeholder={`Add new ${title.toLowerCase()}`}
+            placeholder={`Add ${title.toLowerCase()}`}
             disabled={isSubmitting}
-            className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-secondary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+            className="flex-1 rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-1.5 text-xs font-medium text-gray-800 focus:bg-white focus:border-[#EA580C] focus:outline-none transition-all disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={!newValue.trim() || isSubmitting}
-            className="flex shrink-0 items-center justify-center rounded-lg bg-primary px-3 py-2 text-white transition-colors hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex shrink-0 items-center justify-center rounded-xl bg-[#EA580C] px-3 py-1.5 text-white transition-colors hover:bg-[#c2410c] disabled:opacity-50"
           >
             {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
           </button>
         </form>
 
-        <div className="flex-1 overflow-y-auto pr-1">
+        <div className="flex-1 overflow-y-auto pr-1 space-y-1.5">
           {items.length === 0 ? (
-            <div className="text-sm text-text-secondary text-center py-4">No items found</div>
+            <div className="text-xs text-gray-400 text-center py-4">No items found</div>
           ) : (
-            <ul className="space-y-2">
-              {items.map((item, index) => (
-                <li key={index} className="flex items-center justify-between rounded-lg border border-border/50 bg-bg px-3 py-2.5 group">
-                  <span className="text-sm text-text">{item}</span>
-                  <button
-                    onClick={() => onRemove(category, item)}
-                    className="text-text-secondary hover:text-danger opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity p-1"
-                    title="Remove item"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </li>
-              ))}
-            </ul>
+            items.map((item, index) => (
+              <div key={index} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/40 px-3 py-2 text-xs font-semibold text-gray-800 group">
+                <span>{item}</span>
+                <button
+                  onClick={() => onRemove(category, item)}
+                  className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                  title="Remove item"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))
           )}
         </div>
       </div>
@@ -78,53 +75,60 @@ export default function Settings() {
   const { masters, addMasterItem, removeMasterItem } = useMasters();
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light text-primary">
-          <SettingsIcon size={20} />
+    <div className="space-y-8 animate-fade-in pb-10">
+      {/* Header */}
+      <div className="flex items-center gap-3 border-b border-gray-200 pb-5">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1E3A8A] text-white shadow-xs">
+          <SettingsIcon size={22} />
         </div>
         <div>
-          <h1 className="text-2xl font-semibold text-secondary">Master Settings</h1>
-          <p className="text-sm text-text-secondary">
-            Manage dropdown options for member roles and designations
+          <h1 className="text-2xl font-bold text-[#1E3A8A]">Organization Settings</h1>
+          <p className="text-sm font-medium text-gray-500">
+            Manage term system, meeting limits, and master options
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 min-h-[400px] md:h-[600px]">
-        <MasterList
-          title="Positions"
-          items={masters.positions}
-          category="positions"
-          onAdd={addMasterItem}
-          onRemove={removeMasterItem}
-        />
-        <MasterList
-          title="Directors"
-          items={masters.directors}
-          category="directors"
-          onAdd={addMasterItem}
-          onRemove={removeMasterItem}
-        />
-        <MasterList
-          title="Coordinators"
-          items={masters.coordinators}
-          category="coordinators"
-          onAdd={addMasterItem}
-          onRemove={removeMasterItem}
-        />
-        <MasterList
-          title="Power Team"
-          items={masters.powerTeams}
-          category="powerTeams"
-          onAdd={addMasterItem}
-          onRemove={removeMasterItem}
-        />
+      {/* Meeting Limits & Term Management Cards */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <MeetingLimitsCard />
+        <TermCard />
       </div>
 
-      <PointsMasterCard />
-      <MeetingLimitsCard />
-      <TermCard />
+      {/* Dropdown Master Settings */}
+      <div>
+        <h2 className="text-base font-bold text-[#1E3A8A] mb-3">Master Dropdown Options</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 min-h-[350px]">
+          <MasterList
+            title="Positions"
+            items={masters.positions}
+            category="positions"
+            onAdd={addMasterItem}
+            onRemove={removeMasterItem}
+          />
+          <MasterList
+            title="Directors"
+            items={masters.directors}
+            category="directors"
+            onAdd={addMasterItem}
+            onRemove={removeMasterItem}
+          />
+          <MasterList
+            title="Coordinators"
+            items={masters.coordinators}
+            category="coordinators"
+            onAdd={addMasterItem}
+            onRemove={removeMasterItem}
+          />
+          <MasterList
+            title="Power Team"
+            items={masters.powerTeams}
+            category="powerTeams"
+            onAdd={addMasterItem}
+            onRemove={removeMasterItem}
+          />
+        </div>
+      </div>
     </div>
   );
 }

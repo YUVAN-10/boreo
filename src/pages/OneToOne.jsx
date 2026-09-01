@@ -1,5 +1,5 @@
 import OneToOnePage from "../components/onetoone/OneToOnePage";
 
-export default function RtoR() {
+export default function OneToOne() {
   return <OneToOnePage />;
 }

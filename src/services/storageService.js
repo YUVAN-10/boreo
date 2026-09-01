@@ -1,34 +1,43 @@
-import { ref, uploadString, getDownloadURL, deleteObject } from "firebase/storage";
+import { ref, uploadBytes, uploadString, getDownloadURL, deleteObject } from "firebase/storage";
 import { storage } from "../firebase/config";
 
-// Uploads a base64 Data URL to Firebase Storage and returns the download URL
-export const uploadImage = async (path, dataUrl) => {
-  if (!dataUrl) return null;
-  // If it's already a URL from Firebase, just return it
-  if (dataUrl.startsWith("http")) return dataUrl;
+// Uploads a File object or base64 Data URL to Firebase Storage
+export const uploadFile = async (fileOrDataUrl, path) => {
+  if (!fileOrDataUrl) return null;
+  if (typeof fileOrDataUrl === "string" && fileOrDataUrl.startsWith("http")) {
+    return fileOrDataUrl;
+  }
 
-  const storageRef = ref(storage, path);
+  const storageRef = ref(storage, path || `uploads/${Date.now()}`);
   try {
-    const snapshot = await uploadString(storageRef, dataUrl, "data_url");
+    let snapshot;
+    if (typeof fileOrDataUrl === "string" && fileOrDataUrl.startsWith("data:")) {
+      snapshot = await uploadString(storageRef, fileOrDataUrl, "data_url");
+    } else if (fileOrDataUrl instanceof File || fileOrDataUrl instanceof Blob) {
+      snapshot = await uploadBytes(storageRef, fileOrDataUrl);
+    } else {
+      return fileOrDataUrl;
+    }
     const downloadURL = await getDownloadURL(snapshot.ref);
     return downloadURL;
   } catch (error) {
-    console.error("Error uploading image to storage:", error);
-    throw new Error("Failed to upload image.");
+    console.warn("Firebase Storage upload warning (fallback enabled):", error.message || error);
+    // Fall back to returning dataUrl string so doc creation/saving is not blocked
+    if (typeof fileOrDataUrl === "string") return fileOrDataUrl;
+    return null;
   }
 };
 
-// Deletes an image from Firebase Storage using its path
+export const uploadImage = async (path, dataUrl) => {
+  return uploadFile(dataUrl, path);
+};
+
 export const deleteImage = async (path) => {
   if (!path) return;
-  const storageRef = ref(storage, path);
   try {
+    const storageRef = ref(storage, path);
     await deleteObject(storageRef);
   } catch (error) {
-    console.error("Error deleting image from storage:", error);
-    // Ignore not-found errors
-    if (error.code !== "storage/object-not-found") {
-      throw new Error("Failed to delete image.");
-    }
+    console.warn("Firebase Storage delete warning:", error.message || error);
   }
 };

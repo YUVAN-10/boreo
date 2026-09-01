@@ -16,12 +16,10 @@ import MeetingFormPage from "./pages/MeetingFormPage";
 import PowerTeamMeetings from "./pages/PowerTeamMeetings";
 import PowerTeamMeetingDetailsPage from "./pages/PowerTeamMeetingDetailsPage";
 import PowerTeamMeetingFormPage from "./pages/PowerTeamMeetingFormPage";
-import RtoR from "./pages/RtoR";
-import RToRDetailsPage from "./pages/RToRDetailsPage";
+import OneToOne from "./pages/OneToOne";
+import Visitors from "./pages/Visitors";
 import Referrals from "./pages/Referrals";
 import ReferralDetailsPage from "./pages/ReferralDetailsPage";
-import Points from "./pages/Points";
-import MemberPointsDetailsPage from "./pages/MemberPointsDetailsPage";
 import Settings from "./pages/Settings";
 import LoginPage from "./pages/LoginPage";
 
@@ -53,12 +51,11 @@ function App() {
               <Route path="/power-team-meetings/new" element={<PowerTeamMeetingFormPage mode="add" />} />
               <Route path="/power-team-meetings/:id" element={<PowerTeamMeetingDetailsPage />} />
               <Route path="/power-team-meetings/:id/edit" element={<PowerTeamMeetingFormPage mode="edit" />} />
-              <Route path="/r-to-r" element={<RtoR />} />
-              <Route path="/r-to-r/:id" element={<RToRDetailsPage />} />
+              <Route path="/one-to-one" element={<OneToOne />} />
+              <Route path="/r-to-r" element={<OneToOne />} />
+              <Route path="/visitors" element={<Visitors />} />
               <Route path="/referrals" element={<Referrals />} />
               <Route path="/referrals/:id" element={<ReferralDetailsPage />} />
-              <Route path="/points" element={<Points />} />
-              <Route path="/points/:memberUid/:month" element={<MemberPointsDetailsPage />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
           </Route>

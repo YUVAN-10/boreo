@@ -1,73 +1,51 @@
-import { doc, setDoc, updateDoc, collection, serverTimestamp, getDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase/config";
-import { uploadImage, deleteImage } from "./storageService";
+import { uploadImage } from "./storageService";
 
-// Helper to normalize phone
 export const normalizePhone = (phone) => {
   if (!phone) return "";
   return phone.replace(/\D/g, "");
 };
 
-/**
- * Creates a member.
- * IMPORTANT: According to requirements, this should call a secure backend 
- * (Cloud Function) to generate the Firebase Auth account and create the member document.
- * 
- * For development purposes without a backend, we simulate the backend response 
- * by creating the Firestore document directly. 
- */
 export const createMember = async (memberData, profileImageFile) => {
   try {
-    // 1. Simulate secure backend call
-    // In production, you would do:
-    // const response = await fetch("https://your-region-project.cloudfunctions.net/createMember", {
-    //   method: "POST",
-    //   body: JSON.stringify({ ...memberData })
-    // });
-    // const result = await response.json();
-    // const uid = result.uid;
-
-    // --- SIMULATION FOR DEVELOPMENT ---
-    const uid = `mem-${Date.now()}`; // Simulated UID from backend
-    // --------------------------------
-
+    const uid = `mem-${Date.now()}`;
     let profileImageUrl = null;
 
-    // 2. Upload image to Storage if provided
     if (profileImageFile) {
       profileImageUrl = await uploadImage(`memberProfiles/${uid}/profile.jpg`, profileImageFile);
     }
 
-    // 3. Create document in Firestore
     const docRef = doc(db, "members", uid);
-    
-    // Normalize phone before saving
     const normalizedPhone = normalizePhone(memberData.phone);
-    
     const businessAddress = memberData.businessAddres || memberData.businessAddress || "";
     const experience = memberData.experience || memberData.experienceYears || 0;
     const flyer = memberData.businessFlyer || memberData.flyer || "";
 
-    await setDoc(docRef, {
+    const payload = {
       ...memberData,
       uid,
       phone: normalizedPhone,
-      profileImage: profileImageUrl,
+      profileImage: profileImageUrl || memberData.profileImage || "",
       businessAddres: businessAddress,
       businessAddress: businessAddress,
       experience: experience,
       experienceYears: experience,
       businessFlyer: flyer,
       flyer: flyer,
-      status: memberData.status || "active",
+      status: memberData.status || "Active",
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    });
+    };
 
+    await setDoc(docRef, payload);
     return uid;
   } catch (error) {
     console.error("Error creating member:", error);
-    throw new Error("Failed to create member.");
+    if (error?.code === "permission-denied") {
+      throw new Error("Firestore Permission Denied: Please allow read/write access in Firebase Console Rules for boreo-79678.");
+    }
+    throw new Error(error.message || "Failed to create member.");
   }
 };
 
@@ -76,8 +54,7 @@ export const updateMember = async (uid, memberData, profileImageFile) => {
     const docRef = doc(db, "members", uid);
     let profileImageUrl = memberData.profileImage;
 
-    // If there's a new image file (base64 data URL), upload it
-    if (profileImageFile && profileImageFile.startsWith("data:")) {
+    if (profileImageFile) {
       profileImageUrl = await uploadImage(`memberProfiles/${uid}/profile.jpg`, profileImageFile);
     }
 
@@ -87,7 +64,7 @@ export const updateMember = async (uid, memberData, profileImageFile) => {
 
     const updateData = {
       ...memberData,
-      profileImage: profileImageUrl,
+      profileImage: profileImageUrl || "",
       businessAddres: businessAddress,
       businessAddress: businessAddress,
       experience: experience,
@@ -96,27 +73,30 @@ export const updateMember = async (uid, memberData, profileImageFile) => {
       flyer: flyer,
       updatedAt: serverTimestamp(),
     };
-    
+
     if (memberData.phone) {
       updateData.phone = normalizePhone(memberData.phone);
     }
 
-    await updateDoc(docRef, updateData);
+    await setDoc(docRef, updateData, { merge: true });
   } catch (error) {
     console.error("Error updating member:", error);
-    throw new Error("Failed to update member.");
+    if (error?.code === "permission-denied") {
+      throw new Error("Firestore Permission Denied: Please allow read/write access in Firebase Console Rules for boreo-79678.");
+    }
+    throw new Error(error.message || "Failed to update member.");
   }
 };
 
 export const updateMemberStatus = async (uid, status) => {
   try {
     const docRef = doc(db, "members", uid);
-    await updateDoc(docRef, {
-      status,
-      updatedAt: serverTimestamp()
-    });
+    await setDoc(docRef, { status, updatedAt: serverTimestamp() }, { merge: true });
   } catch (error) {
     console.error("Error updating member status:", error);
-    throw new Error("Failed to update member status.");
+    if (error?.code === "permission-denied") {
+      throw new Error("Firestore Permission Denied: Please allow read/write access in Firebase Console Rules for boreo-79678.");
+    }
+    throw new Error(error.message || "Failed to update member status.");
   }
 };

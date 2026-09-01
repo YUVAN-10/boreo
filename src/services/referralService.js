@@ -1,6 +1,7 @@
 import {
   doc,
   getDoc,
+  getDocs,
   collection,
   onSnapshot,
   runTransaction,
@@ -8,8 +9,6 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 
-// Thrown for expected, user-facing failures (bad input, duplicate, not found).
-// Kept separate from raw Firebase errors so the UI never has to show a raw error code.
 export class ReferralError extends Error {}
 
 function selfReferralId(referrerId, referredUserId) {
@@ -29,11 +28,6 @@ async function assertActiveMember(uid, label) {
   return snap.data();
 }
 
-/**
- * Pre-flight check for instant UI feedback. The transaction inside
- * createSelfReferral/createConnectReferral is the real, race-safe guard —
- * this is only used to warn the user before they submit.
- */
 export async function checkDuplicateReferral({ type, referrerId, connectorId, referredUserId }) {
   if (!referrerId || !referredUserId) return false;
   if (type === "connect" && !connectorId) return false;
@@ -133,17 +127,21 @@ export async function createConnectReferral({
   return id;
 }
 
+export async function getReferrals() {
+  const querySnapshot = await getDocs(collection(db, "referrals"));
+  const referrals = [];
+  querySnapshot.forEach((doc) => {
+    referrals.push({ id: doc.id, ...doc.data() });
+  });
+  return referrals;
+}
+
 export async function getReferral(id) {
   const snap = await getDoc(doc(db, "referrals", id));
   if (!snap.exists()) return null;
   return { id: snap.id, ...snap.data() };
 }
 
-/**
- * Real-time listener over the whole referrals collection. Sorting happens
- * in memory (mirrors the RToR/Members pattern in this codebase) so no
- * composite index is required for the base subscription.
- */
 export function subscribeToReferrals(onChange, onError) {
   const referralsRef = collection(db, "referrals");
 
@@ -168,7 +166,6 @@ export function subscribeToReferrals(onChange, onError) {
   );
 }
 
-/** Translates service/Firebase errors into a message safe to show a user. */
 export function friendlyReferralError(error) {
   if (error instanceof ReferralError) return error.message;
   if (error?.code === "permission-denied") return "You don't have permission to do this.";

@@ -1,11 +1,10 @@
+import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   SquarePen,
   User,
   Users,
-  GraduationCap,
-  MapPin,
   Briefcase,
   IdCard,
   ShieldCheck,
@@ -17,36 +16,37 @@ import { ProfileSection, ProfileField } from "../components/members/ProfileSecti
 import { formatDate } from "../utils/formatDate";
 
 function memberLabel(members, uid) {
-  const member = members.find((m) => m.uid === uid);
-  return member ? `${member.ridNo} - ${member.fullName}` : "—";
+  if (!uid) return "—";
+  const member = members.find((m) => m.uid === uid || m.id === uid);
+  return member ? `${member.ridNo || 'RID'} - ${member.fullName}` : uid;
 }
 
 function ChildrenList({ title, children }) {
   if (!Array.isArray(children) || children.length === 0) return null;
   return (
     <div className="sm:col-span-2">
-      <dt className="mb-2 text-xs font-medium uppercase tracking-wide text-text-secondary">{title}</dt>
+      <dt className="mb-2 text-xs font-bold uppercase tracking-wider text-[#1E3A8A]">{title}</dt>
       <div className="space-y-2">
         {children.map((child, index) => (
           <div
             key={index}
-            className="grid grid-cols-2 gap-2 rounded-lg border border-border bg-bg p-3 text-sm sm:grid-cols-4"
+            className="grid grid-cols-2 gap-2 rounded-xl border border-gray-200 bg-gray-50/50 p-3 text-xs sm:grid-cols-4 font-medium"
           >
             <div>
-              <p className="text-xs text-text-secondary">Name</p>
-              <p className="text-text">{child.name || "—"}</p>
+              <p className="text-[11px] text-gray-500">Name</p>
+              <p className="text-gray-900 font-bold">{child.name || "—"}</p>
             </div>
             <div>
-              <p className="text-xs text-text-secondary">DOB</p>
-              <p className="text-text">{formatDate(child.dob) || "—"}</p>
+              <p className="text-[11px] text-gray-500">DOB</p>
+              <p className="text-gray-800">{formatDate(child.dob) || "—"}</p>
             </div>
             <div>
-              <p className="text-xs text-text-secondary">Blood</p>
-              <p className="text-text">{child.blood || "—"}</p>
+              <p className="text-[11px] text-gray-500">Blood</p>
+              <p className="text-gray-800">{child.blood || "—"}</p>
             </div>
             <div>
-              <p className="text-xs text-text-secondary">Qualification</p>
-              <p className="text-text">{child.qualification || "—"}</p>
+              <p className="text-[11px] text-gray-500">Qualification</p>
+              <p className="text-gray-800">{child.qualification || "—"}</p>
             </div>
           </div>
         ))}
@@ -57,13 +57,23 @@ function ChildrenList({ title, children }) {
 
 export default function MemberProfile() {
   const { id } = useParams();
-  const { members, getMemberById, loading } = useMembers();
-  const member = getMemberById(id);
+  const { members, loading } = useMembers();
+
+  const member = useMemo(() => {
+    if (!id || !members) return null;
+    return members.find(
+      (m) =>
+        m.id === id ||
+        m.uid === id ||
+        String(m.id) === String(id) ||
+        String(m.uid) === String(id)
+    );
+  }, [members, id]);
 
   if (loading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#EA580C] border-t-transparent"></div>
       </div>
     );
   }
@@ -73,36 +83,36 @@ export default function MemberProfile() {
       <div className="space-y-4">
         <Link
           to="/members"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[#1E3A8A] hover:text-[#EA580C]"
         >
           <ArrowLeft size={16} />
           Back to Members
         </Link>
-        <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-text-secondary">
-          Member not found.
+        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center text-sm font-medium text-gray-500">
+          Member record not found (ID: {id}).
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in pb-10">
       <Link
         to="/members"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-primary"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-[#1E3A8A] hover:text-[#EA580C] transition-colors"
       >
         <ArrowLeft size={16} />
         Back to Members
       </Link>
 
       {/* Profile header */}
-      <div className="rounded-xl border border-border bg-card p-6 shadow-sm animate-fade-in">
+      <div className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-xs">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <MemberAvatar name={member.fullName} image={member.profileImage} size="lg" />
             <div>
-              <h1 className="text-xl font-semibold text-text">{member.fullName}</h1>
-              <p className="text-sm text-text-secondary">{member.ridNo}</p>
+              <h1 className="text-2xl font-bold text-[#1E3A8A]">{member.fullName}</h1>
+              <p className="text-sm font-semibold text-gray-500">{member.ridNo || member.businessName}</p>
               <div className="mt-2">
                 <MemberStatusBadge status={member.status} />
               </div>
@@ -110,8 +120,8 @@ export default function MemberProfile() {
           </div>
 
           <Link
-            to={`/members/${member.id}/edit`}
-            className="flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
+            to={`/members/${member.uid || member.id}/edit`}
+            className="flex items-center justify-center gap-2 rounded-xl bg-[#EA580C] px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#c2410c] transition-all"
           >
             <SquarePen size={16} />
             Edit Member
@@ -131,8 +141,8 @@ export default function MemberProfile() {
         </ProfileSection>
 
         <ProfileSection title="Business Information" icon={Briefcase}>
-          <ProfileField label="Company Name" value={member.companyName} />
-          <ProfileField label="Business Type" value={member.businessType} />
+          <ProfileField label="Company Name" value={member.companyName || member.businessName} />
+          <ProfileField label="Business Type" value={member.businessType || member.category} />
           <ProfileField label="Business Address" value={member.businessAddress} full />
           <ProfileField label="Office Number" value={member.officeNo} />
           <ProfileField label="Website" value={member.websiteUrl} />

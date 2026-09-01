@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2 } from "lucide-react";
 import { loginAdmin } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 
@@ -9,7 +9,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState("");
-  
+
   const { isAuthenticated, authError, setAuthError, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -41,7 +41,6 @@ export default function LoginPage() {
 
     try {
       await loginAdmin(email, password);
-      // Wait for AuthContext's onAuthStateChanged to verify Firestore role and update isAuthenticated
     } catch (error) {
       setLocalError(error.message);
       setIsSubmitting(false);
@@ -52,45 +51,40 @@ export default function LoginPage() {
   const isLoading = isSubmitting || authLoading;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 rounded-2xl border border-border bg-card p-8 shadow-lg animate-fade-in">
+    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-12 sm:px-6 lg:px-8 font-sans">
+      <div className="w-full max-w-md space-y-8 rounded-3xl border border-gray-200/80 bg-white p-8 shadow-xl animate-fade-in">
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="flex items-center justify-center p-3 rounded-xl bg-white shadow-sm border border-border/60 mb-4 w-full">
-            <img 
-              src="/logo.png" 
-              alt="Rotary RMBF Erode United Logo" 
-              className="h-16 w-auto max-w-full object-contain"
+          <div className="flex items-center justify-center p-3 rounded-2xl bg-white shadow-xs border border-gray-100 mb-4 w-full">
+            <img
+              src="/boreo-logo.jpg"
+              alt="BOREO Logo"
+              className="h-20 w-auto max-w-full object-contain"
             />
           </div>
-          <h2 className="text-2xl font-bold tracking-tight text-text">
-            Welcome to RMBF Erode United
+          <h2 className="text-2xl font-bold tracking-tight text-[#1E3A8A]">
+            BOREO Admin Panel
           </h2>
-          <p className="mt-2 text-sm text-text-secondary">
-            Please log in with your admin credentials.
+          <p className="mt-1.5 text-xs font-semibold text-gray-500">
+            Business Owners Referral Exchange Organisation
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-text">
+            <label htmlFor="email" className="block text-xs font-bold text-[#1E3A8A] mb-1.5">
               Email Address
             </label>
-            <div className="relative mt-2 rounded-md shadow-sm">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Mail className="h-5 w-5 text-text-secondary" aria-hidden="true" />
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                <Mail className="h-4 w-4 text-gray-400" aria-hidden="true" />
               </div>
               <input
                 id="email"
                 name="email"
                 type="email"
                 required
-                className={[
-                  "block w-full rounded-lg border bg-bg py-2.5 pl-10 pr-3 text-sm text-text placeholder:text-text-secondary focus:outline-none focus:ring-1",
-                  displayError 
-                    ? "border-danger focus:border-danger focus:ring-danger" 
-                    : "border-border focus:border-primary focus:ring-primary"
-                ].join(" ")}
-                placeholder="admin@example.com"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 py-2.5 pl-10 pr-3 text-xs font-semibold text-gray-800 placeholder:text-gray-400 focus:bg-white focus:border-[#EA580C] focus:outline-none transition-all"
+                placeholder="admin@boreo.org"
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
@@ -102,24 +96,19 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-text">
+            <label htmlFor="password" className="block text-xs font-bold text-[#1E3A8A] mb-1.5">
               Password
             </label>
-            <div className="relative mt-2 rounded-md shadow-sm">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Lock className="h-5 w-5 text-text-secondary" aria-hidden="true" />
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                <Lock className="h-4 w-4 text-gray-400" aria-hidden="true" />
               </div>
               <input
                 id="password"
                 name="password"
                 type="password"
                 required
-                className={[
-                  "block w-full rounded-lg border bg-bg py-2.5 pl-10 pr-3 text-sm text-text placeholder:text-text-secondary focus:outline-none focus:ring-1",
-                  displayError 
-                    ? "border-danger focus:border-danger focus:ring-danger" 
-                    : "border-border focus:border-primary focus:ring-primary"
-                ].join(" ")}
+                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 py-2.5 pl-10 pr-3 text-xs font-semibold text-gray-800 placeholder:text-gray-400 focus:bg-white focus:border-[#EA580C] focus:outline-none transition-all"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => {
@@ -130,14 +119,14 @@ export default function LoginPage() {
               />
             </div>
             {displayError && (
-              <p className="mt-2 text-sm text-danger animate-fade-in">{displayError}</p>
+              <p className="mt-2 text-xs font-semibold text-red-600 animate-fade-in">{displayError}</p>
             )}
           </div>
 
           <button
             type="submit"
             disabled={isLoading || !email.trim() || !password.trim()}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#EA580C] px-4 py-3 text-xs font-bold text-white shadow-md hover:bg-[#c2410c] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {isLoading ? (
               <>
@@ -145,7 +134,7 @@ export default function LoginPage() {
                 <span>Authenticating...</span>
               </>
             ) : (
-              "Login securely"
+              "Sign In to Admin Panel"
             )}
           </button>
         </form>

@@ -1,6 +1,6 @@
-import { doc, setDoc, updateDoc, serverTimestamp, deleteDoc, collection, getDocs } from "firebase/firestore";
+import { doc, setDoc, updateDoc, serverTimestamp, deleteDoc, collection, getDocs, writeBatch } from "firebase/firestore";
 import { db } from "../firebase/config";
-import { generateMeetingId, generateQrToken } from "../utils/qrToken";
+import { generateMeetingId } from "../utils/qrToken";
 import { computeMeetingStatus } from "../utils/meetingStatus";
 import { getTermForDate, REGULAR_MEETINGS_PER_TERM, MeetingLimitError } from "../utils/meetingTerm";
 
@@ -31,9 +31,7 @@ export const createMeeting = async (meetingData) => {
     const newMeeting = {
       ...meetingData,
       id,
-      qrToken: generateQrToken(),
       createdBy: "Admin",
-      attendance: [], // Sub-collections are created when attendance is actually marked
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
@@ -75,5 +73,48 @@ export const cancelMeeting = async (id) => {
   } catch (error) {
     console.error("Error cancelling meeting:", error);
     throw new Error("Failed to cancel meeting.");
+  }
+};
+
+// --- Manual Attendance Service Functions ---
+
+export const getMeetingAttendance = async (meetingId) => {
+  try {
+    const attendanceRef = collection(db, "meetings", meetingId, "attendance");
+    const snapshot = await getDocs(attendanceRef);
+    const attendance = {};
+    snapshot.forEach((docSnap) => {
+      attendance[docSnap.id] = { id: docSnap.id, ...docSnap.data() };
+    });
+    return attendance;
+  } catch (error) {
+    console.error("Error fetching meeting attendance:", error);
+    return {};
+  }
+};
+
+export const saveMeetingAttendance = async (meetingId, attendanceList, adminUid = "admin", termId = "Term 13") => {
+  try {
+    const batch = writeBatch(db);
+    attendanceList.forEach((item) => {
+      const memberUid = item.memberUid || item.id || item.uid;
+      const attRef = doc(db, "meetings", meetingId, "attendance", memberUid);
+      const record = {
+        memberUid,
+        memberName: item.memberName || item.fullName || item.name || "",
+        businessName: item.businessName || "",
+        phone: item.phone || item.mobileNumber || "",
+        status: (item.status || "present").toLowerCase(),
+        markedBy: adminUid,
+        markedAt: serverTimestamp(),
+        termId: item.termId || termId,
+      };
+      batch.set(attRef, record, { merge: true });
+    });
+    await batch.commit();
+    return true;
+  } catch (error) {
+    console.error("Error saving meeting attendance:", error);
+    throw error;
   }
 };
