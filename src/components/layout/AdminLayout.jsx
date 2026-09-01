@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { Menu, ShieldCheck } from "lucide-react";
+import { Menu } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { MembersProvider } from "../../context/MembersContext";
 import { EventsProvider } from "../../context/EventsContext";
@@ -44,7 +44,7 @@ export default function AdminLayout() {
                                   <Menu size={20} />
                                 </button>
                                 <div className="flex items-center gap-2.5">
-                                  <img src="/logo.png" alt="RMBF Logo" className="h-8 w-auto object-contain" />
+                                  <img src="/boreo-logo.jpg" alt="BOREO Logo" className="h-8 w-auto object-contain rounded-md" />
                                 </div>
                               </div>
                               <ProfileDropdown />
