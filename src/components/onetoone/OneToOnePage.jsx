@@ -1,17 +1,15 @@
 import { useState, useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
 import {
   Handshake,
   Search,
   Filter,
   FileSpreadsheet,
   Trash2,
-  Edit,
   Eye,
-  Building,
-  X
+  Building
 } from "lucide-react";
-import { getOneToOnes, updateOneToOne, deleteOneToOne } from "../../services/oneToOneService";
-import { useMembers } from "../../context/MembersContext";
+import { getOneToOnes, deleteOneToOne } from "../../services/oneToOneService";
 import { exportToExcel } from "../../utils/exportExcel";
 
 const EXPORT_COLUMNS = [
@@ -24,30 +22,10 @@ const EXPORT_COLUMNS = [
 ];
 
 export default function OneToOnePage() {
-  const { members } = useMembers();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-
-  // Modal State
-  const [editingRecord, setEditingRecord] = useState(null);
-  const [viewingRecord, setViewingRecord] = useState(null);
-  const [saving, setSaving] = useState(false);
-
-  // Form State for Editing
-  const [formData, setFormData] = useState({
-    fromMemberId: "",
-    fromMemberName: "",
-    toMemberId: "",
-    toMemberName: "",
-    meetingLocation: "From Member Office",
-    meetingOfficeName: "From Member Office",
-    date: new Date().toISOString().split("T")[0],
-    time: "10:00 AM",
-    status: "Completed",
-    termId: "Term 13",
-  });
 
   const loadRecords = async () => {
     try {
@@ -74,48 +52,6 @@ export default function OneToOnePage() {
       return rec.toMemberName ? `To Member Office (${rec.toMemberName})` : "To Member Office";
     }
     return rec.meetingLocation || rec.meetingOfficeName || "From Member Office";
-  };
-
-  const handleOpenEditModal = (rec) => {
-    setEditingRecord(rec);
-    setFormData({
-      fromMemberId: rec.fromMemberId || "",
-      fromMemberName: rec.fromMemberName || "",
-      toMemberId: rec.toMemberId || "",
-      toMemberName: rec.toMemberName || "",
-      meetingLocation: rec.meetingLocation || "From Member Office",
-      meetingOfficeName: rec.meetingOfficeName || rec.meetingLocation || "From Member Office",
-      date: rec.date || new Date().toISOString().split("T")[0],
-      time: rec.time || "10:00 AM",
-      status: rec.status || "Completed",
-      termId: rec.termId || "Term 13",
-    });
-  };
-
-  const handleSave = async (e) => {
-    e.preventDefault();
-    if (!editingRecord) return;
-
-    try {
-      setSaving(true);
-      const fromMem = members.find((m) => (m.uid || m.id) === formData.fromMemberId);
-      const toMem = members.find((m) => (m.uid || m.id) === formData.toMemberId);
-
-      const payload = {
-        ...formData,
-        fromMemberName: fromMem ? (fromMem.fullName || fromMem.name) : formData.fromMemberName,
-        toMemberName: toMem ? (toMem.fullName || toMem.name) : formData.toMemberName,
-      };
-
-      await updateOneToOne(editingRecord.id, payload);
-      setEditingRecord(null);
-      await loadRecords();
-    } catch (err) {
-      console.error("Failed to update One to One record:", err);
-      alert("Failed to update record.");
-    } finally {
-      setSaving(false);
-    }
   };
 
   const handleDelete = async (id) => {
@@ -242,8 +178,16 @@ export default function OneToOnePage() {
               ) : (
                 filteredRecords.map((rec) => (
                   <tr key={rec.id} className="hover:bg-blue-50/30 transition-colors">
-                    <td className="px-5 py-4 font-bold text-gray-900">{rec.fromMemberName || "Member"}</td>
-                    <td className="px-5 py-4 font-bold text-gray-900">{rec.toMemberName || "Member"}</td>
+                    <td className="px-5 py-4 font-bold text-gray-900">
+                      <Link to={`/one-to-one/${rec.id}`} className="hover:text-[#EA580C] hover:underline">
+                        {rec.fromMemberName || "Member"}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-4 font-bold text-gray-900">
+                      <Link to={`/one-to-one/${rec.id}`} className="hover:text-[#EA580C] hover:underline">
+                        {rec.toMemberName || "Member"}
+                      </Link>
+                    </td>
                     <td className="px-5 py-4 text-gray-700 font-medium">
                       <span className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-[#1E3A8A]">
                         <Building size={14} />
@@ -267,20 +211,13 @@ export default function OneToOnePage() {
                     </td>
                     <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => setViewingRecord(rec)}
+                        <Link
+                          to={`/one-to-one/${rec.id}`}
                           className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-[#1E3A8A] transition-colors cursor-pointer"
                           title="View Details"
                         >
                           <Eye size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleOpenEditModal(rec)}
-                          className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-[#1E3A8A] transition-colors cursor-pointer"
-                          title="Edit Record"
-                        >
-                          <Edit size={16} />
-                        </button>
+                        </Link>
                         <button
                           onClick={() => handleDelete(rec.id)}
                           className="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
@@ -297,211 +234,6 @@ export default function OneToOnePage() {
           </table>
         </div>
       </div>
-
-      {/* Modal: Edit One to One */}
-      {editingRecord && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl animate-fade-in">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-              <h3 className="text-lg font-bold text-[#1E3A8A]">Edit One to One Meeting</h3>
-              <button
-                onClick={() => setEditingRecord(null)}
-                className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 cursor-pointer"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSave} className="mt-4 space-y-4 text-xs">
-              <div>
-                <label className="block font-bold text-[#1E3A8A] mb-1">From Member</label>
-                <select
-                  value={formData.fromMemberId}
-                  onChange={(e) => {
-                    const m = members.find((mem) => (mem.uid || mem.id) === e.target.value);
-                    setFormData((prev) => ({
-                      ...prev,
-                      fromMemberId: e.target.value,
-                      fromMemberName: m ? (m.fullName || m.name) : "",
-                    }));
-                  }}
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50/50 p-2.5 font-semibold text-gray-800 focus:bg-white focus:border-[#EA580C] focus:outline-none"
-                >
-                  {members.map((m) => (
-                    <option key={m.uid || m.id} value={m.uid || m.id}>
-                      {m.fullName || m.name} ({m.businessName || m.companyName || "Member"})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#1E3A8A] mb-1">To Member</label>
-                <select
-                  value={formData.toMemberId}
-                  onChange={(e) => {
-                    const m = members.find((mem) => (mem.uid || mem.id) === e.target.value);
-                    setFormData((prev) => ({
-                      ...prev,
-                      toMemberId: e.target.value,
-                      toMemberName: m ? (m.fullName || m.name) : "",
-                    }));
-                  }}
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50/50 p-2.5 font-semibold text-gray-800 focus:bg-white focus:border-[#EA580C] focus:outline-none"
-                >
-                  {members.map((m) => (
-                    <option key={m.uid || m.id} value={m.uid || m.id}>
-                      {m.fullName || m.name} ({m.businessName || m.companyName || "Member"})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#1E3A8A] mb-1">Meeting Conducted At (Office)</label>
-                <select
-                  value={formData.meetingLocation}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      meetingLocation: e.target.value,
-                      meetingOfficeName: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50/50 p-2.5 font-semibold text-gray-800 focus:bg-white focus:border-[#EA580C] focus:outline-none"
-                >
-                  <option value="From Member Office">From Member Office</option>
-                  <option value="To Member Office">To Member Office</option>
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-[#1E3A8A] mb-1">Date</label>
-                  <input
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50/50 p-2.5 font-semibold text-gray-800 focus:bg-white focus:border-[#EA580C] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-[#1E3A8A] mb-1">Time</label>
-                  <input
-                    type="text"
-                    value={formData.time}
-                    placeholder="e.g. 10:30 AM"
-                    onChange={(e) => setFormData((prev) => ({ ...prev, time: e.target.value }))}
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50/50 p-2.5 font-semibold text-gray-800 focus:bg-white focus:border-[#EA580C] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#1E3A8A] mb-1">Status</label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value }))}
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50/50 p-2.5 font-semibold text-gray-800 focus:bg-white focus:border-[#EA580C] focus:outline-none"
-                >
-                  <option value="Completed">Completed</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={() => setEditingRecord(null)}
-                  className="rounded-xl border border-[#1E3A8A] px-4 py-2 font-semibold text-[#1E3A8A] hover:bg-blue-50 cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="rounded-xl bg-[#EA580C] px-5 py-2 font-bold text-white shadow-xs hover:bg-[#c2410c] disabled:opacity-50 cursor-pointer"
-                >
-                  {saving ? "Saving..." : "Save Record"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: View One to One Record */}
-      {viewingRecord && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl animate-fade-in">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-              <h3 className="text-lg font-bold text-[#1E3A8A]">One to One Details</h3>
-              <button
-                onClick={() => setViewingRecord(null)}
-                className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 cursor-pointer"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="mt-4 space-y-3 text-xs">
-              <div className="rounded-xl bg-gray-50 p-3">
-                <p className="text-gray-500 font-medium">From Member:</p>
-                <p className="text-sm font-bold text-gray-900">{viewingRecord.fromMemberName}</p>
-              </div>
-
-              <div className="rounded-xl bg-gray-50 p-3">
-                <p className="text-gray-500 font-medium">To Member:</p>
-                <p className="text-sm font-bold text-gray-900">{viewingRecord.toMemberName}</p>
-              </div>
-
-              <div className="rounded-xl bg-gray-50 p-3">
-                <p className="text-gray-500 font-medium">Conducted At:</p>
-                <p className="text-xs font-semibold text-[#1E3A8A] flex items-center gap-1.5 mt-1">
-                  <Building size={15} className="text-[#EA580C]" />
-                  {getOfficeLabel(viewingRecord)}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-gray-50 p-3">
-                  <p className="text-gray-500 font-medium">Date:</p>
-                  <p className="font-semibold text-gray-800">{viewingRecord.date}</p>
-                </div>
-                <div className="rounded-xl bg-gray-50 p-3">
-                  <p className="text-gray-500 font-medium">Time:</p>
-                  <p className="font-semibold text-gray-800">{viewingRecord.time}</p>
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-gray-50 p-3">
-                <p className="text-gray-500 font-medium">Status:</p>
-                <span
-                  className={`mt-1 inline-block rounded-full px-3 py-1 text-xs font-bold ${
-                    viewingRecord.status === "Completed"
-                      ? "bg-emerald-100 text-emerald-800"
-                      : viewingRecord.status === "Cancelled"
-                      ? "bg-gray-100 text-gray-700"
-                      : "bg-orange-100 text-orange-800"
-                  }`}
-                >
-                  {viewingRecord.status || "Completed"}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-4 mt-4 border-t border-gray-100">
-              <button
-                onClick={() => setViewingRecord(null)}
-                className="rounded-xl bg-[#1E3A8A] px-5 py-2 font-bold text-white hover:bg-blue-900 cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

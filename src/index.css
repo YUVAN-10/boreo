@@ -66,3 +66,16 @@ body {
   background-color: var(--color-border);
   border-radius: 9999px;
 }
+
+/* Premium Date Input Styling */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  background-color: transparent;
+  padding: 4px;
+  border-radius: 6px;
+  filter: invert(34%) sepia(85%) saturate(2250%) hue-rotate(8deg) brightness(98%) contrast(97%);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  transform: scale(1.15);
+}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
 import {
   UserPlus,
   Search,
@@ -6,6 +7,7 @@ import {
   FileSpreadsheet,
   Trash2,
   Edit,
+  Eye,
   UserCheck,
   X
 } from "lucide-react";
@@ -37,15 +39,15 @@ export default function VisitorsPage() {
   // Form State for Editing
   const [formData, setFormData] = useState({
     visitorName: "",
+    category: "",
+    phone: "",
+    companyName: "",
+    dateOfBirth: "",
+    visitDate: new Date().toISOString().split("T")[0],
+    source: "signup",
+    status: "Active",
     inviteById: "",
     inviteByName: "",
-    companyName: "",
-    phone: "",
-    email: "",
-    category: "",
-    status: "Pending",
-    visitDate: new Date().toISOString().split("T")[0],
-    termId: "Term 13",
   });
 
   const loadVisitors = async () => {
@@ -67,16 +69,16 @@ export default function VisitorsPage() {
   const handleOpenEditModal = (vis) => {
     setEditingVisitor(vis);
     setFormData({
-      visitorName: vis.visitorName || "",
-      inviteById: vis.inviteById || "",
-      inviteByName: vis.inviteByName || vis.inviteBy || "",
-      companyName: vis.companyName || vis.businessName || "",
+      visitorName: vis.visitorName || vis.name || "",
+      category: vis.category || vis.productsServices || "",
       phone: vis.phone || "",
-      email: vis.email || "",
-      category: vis.category || "",
-      status: vis.status || "Pending",
+      companyName: vis.companyName || vis.businessName || "",
+      dateOfBirth: vis.dateOfBirth || vis.dob || "1975-09-19",
       visitDate: vis.visitDate || new Date().toISOString().split("T")[0],
-      termId: vis.termId || "Term 13",
+      source: vis.source || "signup",
+      status: vis.status || "Active",
+      inviteById: vis.inviteById || "",
+      inviteByName: vis.inviteByName || vis.inviteBy || "RMBF Erode United",
     });
   };
 
@@ -85,6 +87,14 @@ export default function VisitorsPage() {
     if (!editingVisitor) return;
     if (!formData.visitorName.trim()) {
       alert("Please enter Visitor Name.");
+      return;
+    }
+    if (!formData.category.trim()) {
+      alert("Please enter Products / Services.");
+      return;
+    }
+    if (!formData.phone.trim()) {
+      alert("Please enter Phone Number.");
       return;
     }
 
@@ -102,6 +112,23 @@ export default function VisitorsPage() {
     } catch (err) {
       console.error("Failed to save visitor:", err);
       alert("Failed to save visitor.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancelVisitor = async () => {
+    if (!editingVisitor) return;
+    if (!window.confirm(`Are you sure you want to cancel visitor "${editingVisitor.visitorName || editingVisitor.name}"?`)) return;
+
+    try {
+      setSaving(true);
+      await updateVisitor(editingVisitor.id, { status: "Cancelled" });
+      setEditingVisitor(null);
+      await loadVisitors();
+    } catch (err) {
+      console.error("Failed to cancel visitor:", err);
+      alert("Failed to cancel visitor.");
     } finally {
       setSaving(false);
     }
@@ -202,9 +229,10 @@ export default function VisitorsPage() {
             className="bg-transparent focus:outline-none cursor-pointer font-bold"
           >
             <option value="All">All Statuses</option>
-            <option value="Pending">Pending (Orange)</option>
-            <option value="Joined">Joined (Green)</option>
-            <option value="Cancelled">Cancelled (Gray)</option>
+            <option value="Active">Active</option>
+            <option value="Pending">Pending</option>
+            <option value="Joined">Joined</option>
+            <option value="Cancelled">Cancelled</option>
           </select>
         </div>
       </div>
@@ -240,7 +268,11 @@ export default function VisitorsPage() {
               ) : (
                 filteredVisitors.map((vis) => (
                   <tr key={vis.id} className="hover:bg-blue-50/30 transition-colors">
-                    <td className="px-5 py-4 font-bold text-gray-900">{vis.visitorName || "Guest"}</td>
+                    <td className="px-5 py-4 font-bold text-gray-900">
+                      <Link to={`/visitors/${vis.id}`} className="hover:text-[#EA580C] hover:underline">
+                        {vis.visitorName || "Guest"}
+                      </Link>
+                    </td>
                     <td className="px-5 py-4 font-semibold text-[#1E3A8A]">
                       {vis.inviteByName || vis.inviteBy || "Member"}
                     </td>
@@ -254,14 +286,21 @@ export default function VisitorsPage() {
                             ? "bg-emerald-100 text-emerald-800"
                             : vis.status === "Cancelled"
                             ? "bg-gray-100 text-gray-700"
-                            : "bg-orange-100 text-orange-800"
+                            : "bg-sky-100 text-sky-800"
                         }`}
                       >
-                        {vis.status || "Pending"}
+                        {vis.status || "Active"}
                       </span>
                     </td>
                     <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <Link
+                          to={`/visitors/${vis.id}`}
+                          className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-[#1E3A8A] transition-colors cursor-pointer"
+                          title="View Visitor Details"
+                        >
+                          <Eye size={16} />
+                        </Link>
                         {vis.status !== "Joined" && (
                           <button
                             onClick={() => handleConvertToMember(vis)}
@@ -279,13 +318,6 @@ export default function VisitorsPage() {
                         >
                           <Edit size={16} />
                         </button>
-                        <button
-                          onClick={() => handleDelete(vis.id)}
-                          className="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
-                          title="Delete Visitor"
-                        >
-                          <Trash2 size={16} />
-                        </button>
                       </div>
                     </td>
                   </tr>
@@ -296,12 +328,12 @@ export default function VisitorsPage() {
         </div>
       </div>
 
-      {/* Modal: Edit Visitor */}
+      {/* Modal: Edit Visitor (Matching Reference Image 1) */}
       {editingVisitor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl animate-fade-in">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-              <h3 className="text-lg font-bold text-[#1E3A8A]">Edit Visitor</h3>
+          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl animate-fade-in space-y-6">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <h3 className="text-lg font-bold text-gray-900">Edit Visitor</h3>
               <button
                 onClick={() => setEditingVisitor(null)}
                 className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 cursor-pointer"
@@ -310,104 +342,102 @@ export default function VisitorsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="mt-4 space-y-4 text-xs">
-              <div>
-                <label className="block font-bold text-[#1E3A8A] mb-1">Visitor Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.visitorName}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, visitorName: e.target.value }))}
-                  placeholder="e.g. John Doe"
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50/50 p-2.5 font-semibold text-gray-800 focus:bg-white focus:border-[#EA580C] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#1E3A8A] mb-1">Invite By (Member) *</label>
-                <select
-                  value={formData.inviteById}
-                  onChange={(e) => {
-                    const m = members.find((mem) => (mem.uid || mem.id) === e.target.value);
-                    setFormData((prev) => ({
-                      ...prev,
-                      inviteById: e.target.value,
-                      inviteByName: m ? (m.fullName || m.name) : "",
-                    }));
-                  }}
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50/50 p-2.5 font-semibold text-gray-800 focus:bg-white focus:border-[#EA580C] focus:outline-none"
-                >
-                  {members.map((m) => (
-                    <option key={m.uid || m.id} value={m.uid || m.id}>
-                      {m.fullName || m.name} ({m.businessName || "Member"})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleSave} className="space-y-5 text-xs">
+              {/* 2-Column Form Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-[#1E3A8A] mb-1">Company / Business</label>
+                  <label className="block font-bold text-gray-700 mb-1.5">
+                    Visitor Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.visitorName}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, visitorName: e.target.value }))}
+                    placeholder="e.g. Jayakumar"
+                    className="w-full rounded-xl border border-gray-200 bg-white p-2.5 font-medium text-gray-800 focus:border-[#0088CC] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1.5">
+                    Products / Services <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.category}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
+                    placeholder="e.g. Designing"
+                    className="w-full rounded-xl border border-gray-200 bg-white p-2.5 font-medium text-gray-800 focus:border-[#0088CC] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1.5">
+                    Phone Number <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.phone}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+                    placeholder="e.g. 9842448424"
+                    className="w-full rounded-xl border border-gray-200 bg-white p-2.5 font-medium text-gray-800 focus:border-[#0088CC] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1.5">Company Name</label>
                   <input
                     type="text"
                     value={formData.companyName}
-                    placeholder="e.g. Apex Traders"
                     onChange={(e) => setFormData((prev) => ({ ...prev, companyName: e.target.value }))}
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50/50 p-2.5 font-semibold text-gray-800 focus:bg-white focus:border-[#EA580C] focus:outline-none"
+                    placeholder="e.g. JKV Durga designer"
+                    className="w-full rounded-xl border border-gray-200 bg-white p-2.5 font-medium text-gray-800 focus:border-[#0088CC] focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block font-bold text-[#1E3A8A] mb-1">Category</label>
-                  <input
-                    type="text"
-                    value={formData.category}
-                    placeholder="e.g. Manufacturing"
-                    onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50/50 p-2.5 font-semibold text-gray-800 focus:bg-white focus:border-[#EA580C] focus:outline-none"
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-[#1E3A8A] mb-1">Phone Number</label>
+                  <label className="block font-bold text-gray-700 mb-1.5">Date of Birth</label>
                   <input
-                    type="text"
-                    value={formData.phone}
-                    placeholder="9999999999"
-                    onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50/50 p-2.5 font-semibold text-gray-800 focus:bg-white focus:border-[#EA580C] focus:outline-none"
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, dateOfBirth: e.target.value }))}
+                    className="w-full rounded-xl border border-gray-200 bg-white p-2.5 font-medium text-gray-800 focus:border-[#0088CC] focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block font-bold text-[#1E3A8A] mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    placeholder="visitor@example.com"
-                    onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50/50 p-2.5 font-semibold text-gray-800 focus:bg-white focus:border-[#EA580C] focus:outline-none"
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-[#1E3A8A] mb-1">Visit Date</label>
+                  <label className="block font-bold text-gray-700 mb-1.5">Visit Date</label>
                   <input
                     type="date"
                     value={formData.visitDate}
                     onChange={(e) => setFormData((prev) => ({ ...prev, visitDate: e.target.value }))}
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50/50 p-2.5 font-semibold text-gray-800 focus:bg-white focus:border-[#EA580C] focus:outline-none"
+                    className="w-full rounded-xl border border-gray-200 bg-white p-2.5 font-medium text-gray-800 focus:border-[#0088CC] focus:outline-none"
                   />
                 </div>
+
                 <div>
-                  <label className="block font-bold text-[#1E3A8A] mb-1">Status</label>
+                  <label className="block font-bold text-gray-700 mb-1.5">Source</label>
+                  <input
+                    type="text"
+                    disabled
+                    value={formData.source}
+                    className="w-full rounded-xl border border-gray-200 bg-gray-100 p-2.5 font-medium text-gray-500 cursor-not-allowed"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1.5">
+                    Status <span className="text-red-500">*</span>
+                  </label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value }))}
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50/50 p-2.5 font-semibold text-gray-800 focus:bg-white focus:border-[#EA580C] focus:outline-none"
+                    className="w-full rounded-xl border border-gray-200 bg-white p-2.5 font-medium text-gray-800 focus:border-[#0088CC] focus:outline-none cursor-pointer"
                   >
+                    <option value="Active">Active</option>
                     <option value="Pending">Pending</option>
                     <option value="Joined">Joined</option>
                     <option value="Cancelled">Cancelled</option>
@@ -415,21 +445,70 @@ export default function VisitorsPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+              {/* Invite By Section */}
+              <div className="pt-2 border-t border-gray-100">
+                <label className="block font-bold text-gray-900 mb-2">Invite By</label>
+                {formData.inviteByName ? (
+                  <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50/50 p-3">
+                    <span className="font-semibold text-gray-800">{formData.inviteByName}</span>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, inviteById: "", inviteByName: "" }))}
+                      className="text-red-500 hover:text-red-700 p-1 transition-colors cursor-pointer"
+                      title="Remove Inviter"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <select
+                    value={formData.inviteById}
+                    onChange={(e) => {
+                      const m = members.find((mem) => (mem.uid || mem.id) === e.target.value);
+                      setFormData((prev) => ({
+                        ...prev,
+                        inviteById: e.target.value,
+                        inviteByName: m ? (m.fullName || m.name) : "",
+                      }));
+                    }}
+                    className="w-full rounded-xl border border-gray-200 bg-white p-2.5 font-medium text-gray-800 focus:border-[#0088CC] focus:outline-none"
+                  >
+                    <option value="">-- Select Member --</option>
+                    {members.map((m) => (
+                      <option key={m.uid || m.id} value={m.uid || m.id}>
+                        {m.fullName || m.name} ({m.businessName || "Member"})
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                 <button
                   type="button"
-                  onClick={() => setEditingVisitor(null)}
-                  className="rounded-xl border border-[#1E3A8A] px-4 py-2 font-semibold text-[#1E3A8A] hover:bg-blue-50 cursor-pointer"
+                  onClick={handleCancelVisitor}
+                  className="rounded-xl bg-red-600 px-4 py-2.5 font-bold text-white hover:bg-red-700 transition-colors cursor-pointer"
                 >
-                  Cancel
+                  Cancel Visitor
                 </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="rounded-xl bg-[#EA580C] px-5 py-2 font-bold text-white shadow-xs hover:bg-[#c2410c] disabled:opacity-50 cursor-pointer"
-                >
-                  {saving ? "Saving..." : "Save Visitor"}
-                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingVisitor(null)}
+                    className="rounded-xl border border-gray-300 px-4 py-2.5 font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="rounded-xl bg-[#0088CC] px-5 py-2.5 font-bold text-white shadow-xs hover:bg-[#0077B5] disabled:opacity-50 transition-colors cursor-pointer"
+                  >
+                    {saving ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

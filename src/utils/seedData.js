@@ -5,15 +5,49 @@ export async function seedSampleData() {
   try {
     console.log("Seeding BOREO dummy data into Cloud Firestore...");
 
-    // 1. Members (2 Dummy Records)
+    // 1. Members (2 Comprehensive Dummy Records matching Application Form fields)
     await setDoc(doc(db, "members", "boreo-mem-1"), {
       uid: "boreo-mem-1",
+      applicationDate: "2026-01-10",
       fullName: "Rajesh Sharma",
-      companyName: "Supreme Traders",
-      businessName: "Supreme Traders",
+      dateOfBirth: "1985-05-15",
+      age: "41",
+      sex: "Male",
+      bloodGroup: "O+",
+      companyName: "Supreme Traders & Distributors",
+      businessName: "Supreme Traders & Distributors",
+      firmType: "Proprietorship",
+      professionDetails: "Trader",
+      totalStaff: "15",
+      officeAddress: "45, Brough Road, Erode - 638001, Tamil Nadu",
+      businessAddress: "45, Brough Road, Erode - 638001, Tamil Nadu",
+      gstNo: "33ABCDE1234F1Z5",
+      annualTurnover: "₹1.5 Crores",
       phone: "9876543210",
-      ridNo: "BOREO13001",
+      whatsappNo: "9876543210",
+      officeNo: "0424-2254321",
       email: "rajesh@supremetraders.com",
+      websiteUrl: "https://supremetraders.com",
+      aadharNo: "9876 5432 1098",
+      panNo: "ABCDE1234F",
+      representingCategory: "Electrical & Industrial Trader",
+      howDoYouKnow: "Friends",
+      howDoYouKnowOthers: "",
+      proxyAvailable: "Yes",
+      topClients: [
+        "L&T Electricals Erode",
+        "Texmo Precision Pipes",
+        "Sakthi Sugars Ltd",
+        "KG Hospital & Research",
+        "Roots Industries",
+        "Bannari Amman Spinning",
+        "Vardhman Textiles",
+        "Premier Cotton Mills",
+        "KPR Mill Pvt Ltd",
+        "Subhashini Granites",
+      ],
+      ridNo: "BOREO13001",
+      joiningDate: "2026-01-15",
       status: "Active",
       powerTeam: "IT & Digital",
       position: "President",
@@ -24,12 +58,46 @@ export async function seedSampleData() {
 
     await setDoc(doc(db, "members", "boreo-mem-2"), {
       uid: "boreo-mem-2",
+      applicationDate: "2026-02-01",
       fullName: "Anitha V",
+      dateOfBirth: "1990-08-22",
+      age: "36",
+      sex: "Female",
+      bloodGroup: "B+",
       companyName: "VeeVin Tech Solutions",
       businessName: "VeeVin Tech Solutions",
+      firmType: "Partnership",
+      professionDetails: "Service Provide",
+      totalStaff: "24",
+      officeAddress: "12/A, Perundurai Road, Near Collectorate, Erode - 638011",
+      businessAddress: "12/A, Perundurai Road, Near Collectorate, Erode - 638011",
+      gstNo: "33XYZWV9876G1Z2",
+      annualTurnover: "₹85 Lakhs",
       phone: "9123456789",
-      ridNo: "BOREO13002",
+      whatsappNo: "9123456789",
+      officeNo: "0424-2289900",
       email: "anitha@veevin.com",
+      websiteUrl: "https://veevin.com",
+      aadharNo: "4567 8901 2345",
+      panNo: "XYZWV9876G",
+      representingCategory: "Software & Web Development",
+      howDoYouKnow: "Social Media Promotions",
+      howDoYouKnowOthers: "",
+      proxyAvailable: "Yes",
+      topClients: [
+        "Velalar Educational Trust",
+        "Erode Tex Hub",
+        "Apex Hospital Group",
+        "Global Silk Exports",
+        "Smart Retails Tamil Nadu",
+        "Green Valley Organic",
+        "Kannan Departmental",
+        "Sri Kumaran Silks",
+        "Heritage Agro Tech",
+        "Mettur Power Systems",
+      ],
+      ridNo: "BOREO13002",
+      joiningDate: "2026-02-05",
       status: "Active",
       powerTeam: "IT & Digital",
       position: "Vice President",
@@ -40,7 +108,7 @@ export async function seedSampleData() {
 
     // 2. Meetings & Attendance (2 Dummy Records)
     const today = new Date().toISOString().split("T")[0];
-    
+
     await setDoc(doc(db, "meetings", "boreo-mtg-1"), {
       id: "boreo-mtg-1",
       meetingName: "BOREO Weekly Business Forum",
@@ -55,7 +123,7 @@ export async function seedSampleData() {
     await setDoc(doc(db, "meetings", "boreo-mtg-1", "attendance", "boreo-mem-1"), {
       memberUid: "boreo-mem-1",
       memberName: "Rajesh Sharma",
-      businessName: "Supreme Traders",
+      businessName: "Supreme Traders & Distributors",
       phone: "9876543210",
       status: "present",
       markedBy: "admin",
@@ -88,7 +156,7 @@ export async function seedSampleData() {
     await setDoc(doc(db, "meetings", "boreo-mtg-2", "attendance", "boreo-mem-1"), {
       memberUid: "boreo-mem-1",
       memberName: "Rajesh Sharma",
-      businessName: "Supreme Traders",
+      businessName: "Supreme Traders & Distributors",
       phone: "9876543210",
       status: "present",
       markedBy: "admin",
@@ -247,7 +315,7 @@ export async function seedSampleData() {
       updatedAt: serverTimestamp(),
     });
 
-    console.log("All BOREO collections successfully populated with dummy records!");
+    console.log("All BOREO collections successfully populated with updated dummy records!");
     return true;
   } catch (err) {
     console.error("Error seeding sample data:", err);

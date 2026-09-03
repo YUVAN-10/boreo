@@ -33,9 +33,6 @@ export default function PowerTeamMeetingForm({ initialData, onSubmit, onCancel, 
   const { members } = useMembers();
   const { activeTerm } = useTerms();
 
-  // Meetings created before "Meeting Name" existed as its own field stored
-  // the Power Team's name in meetingName — fall back to that as the team,
-  // and leave the free-text name blank for the admin to fill in properly.
   const [formData, setFormData] = useState(() => ({
     ...initialData,
     meetingName: initialData?.powerTeamName ? initialData?.meetingName || "" : "",
@@ -53,10 +50,6 @@ export default function PowerTeamMeetingForm({ initialData, onSubmit, onCancel, 
     setFormData((prev) => ({ ...prev, memberIds }));
   };
 
-  // Switching Power Team resets eligibility to that team's full active
-  // roster — a stale selection from a different team should never carry
-  // over. Skipped on first mount so editing an existing meeting doesn't
-  // wipe out its saved selection.
   useEffect(() => {
     if (previousTeamRef.current === formData.powerTeamName) return;
     previousTeamRef.current = formData.powerTeamName;
@@ -168,14 +161,14 @@ export default function PowerTeamMeetingForm({ initialData, onSubmit, onCancel, 
           type="button"
           disabled={isSubmitting}
           onClick={onCancel}
-          className="rounded-lg border border-border px-5 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-lg border border-border px-5 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {isSubmitting ? (
             <>

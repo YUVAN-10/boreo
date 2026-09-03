@@ -4,10 +4,8 @@ import {
   ArrowLeft,
   SquarePen,
   User,
-  Users,
   Briefcase,
-  IdCard,
-  ShieldCheck,
+  FileCheck,
 } from "lucide-react";
 import { useMembers } from "../context/MembersContext";
 import MemberAvatar from "../components/members/MemberAvatar";
@@ -15,41 +13,28 @@ import MemberStatusBadge from "../components/members/MemberStatusBadge";
 import { ProfileSection, ProfileField } from "../components/members/ProfileSection";
 import { formatDate } from "../utils/formatDate";
 
-function memberLabel(members, uid) {
-  if (!uid) return "—";
-  const member = members.find((m) => m.uid === uid || m.id === uid);
-  return member ? `${member.ridNo || 'RID'} - ${member.fullName}` : uid;
-}
+function TopClientsList({ topClients }) {
+  if (!Array.isArray(topClients) || !topClients.some((c) => c && String(c).trim())) return null;
+  const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
 
-function ChildrenList({ title, children }) {
-  if (!Array.isArray(children) || children.length === 0) return null;
   return (
     <div className="sm:col-span-2">
-      <dt className="mb-2 text-xs font-bold uppercase tracking-wider text-[#1E3A8A]">{title}</dt>
-      <div className="space-y-2">
-        {children.map((child, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-2 gap-2 rounded-xl border border-gray-200 bg-gray-50/50 p-3 text-xs sm:grid-cols-4 font-medium"
-          >
-            <div>
-              <p className="text-[11px] text-gray-500">Name</p>
-              <p className="text-gray-900 font-bold">{child.name || "—"}</p>
+      <dt className="mb-2 text-xs font-bold uppercase tracking-wider text-[#1E3A8A]">
+        Top 10 Most Valued Clients
+      </dt>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {topClients.map((client, idx) => {
+          if (!client || !String(client).trim()) return null;
+          return (
+            <div
+              key={idx}
+              className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50/50 px-3.5 py-2 text-xs font-medium"
+            >
+              <span className="font-bold text-[#EA580C]">{ROMAN[idx]})</span>
+              <span className="text-gray-900">{client}</span>
             </div>
-            <div>
-              <p className="text-[11px] text-gray-500">DOB</p>
-              <p className="text-gray-800">{formatDate(child.dob) || "—"}</p>
-            </div>
-            <div>
-              <p className="text-[11px] text-gray-500">Blood</p>
-              <p className="text-gray-800">{child.blood || "—"}</p>
-            </div>
-            <div>
-              <p className="text-[11px] text-gray-500">Qualification</p>
-              <p className="text-gray-800">{child.qualification || "—"}</p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -112,9 +97,17 @@ export default function MemberProfile() {
             <MemberAvatar name={member.fullName} image={member.profileImage} size="lg" />
             <div>
               <h1 className="text-2xl font-bold text-[#1E3A8A]">{member.fullName}</h1>
-              <p className="text-sm font-semibold text-gray-500">{member.ridNo || member.businessName}</p>
-              <div className="mt-2">
+              <p className="text-sm font-semibold text-gray-500">
+                {member.ridNo ? `${member.ridNo} • ` : ""}
+                {member.companyName}
+              </p>
+              <div className="mt-2 flex items-center gap-2">
                 <MemberStatusBadge status={member.status} />
+                {member.representingCategory && (
+                  <span className="rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-bold text-[#1E3A8A]">
+                    {member.representingCategory}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -131,56 +124,44 @@ export default function MemberProfile() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <ProfileSection title="Personal Information" icon={User}>
-          <ProfileField label="Full Name" value={member.fullName} />
+          <ProfileField label="Date of Joining" value={formatDate(member.joiningDate || member.applicationDate)} />
+          <ProfileField label="Applicant Name" value={member.fullName} />
           <ProfileField label="Date of Birth" value={formatDate(member.dateOfBirth)} />
+          <ProfileField label="Age" value={member.age ? `${member.age} yrs` : null} />
+          <ProfileField label="Sex" value={member.sex} />
           <ProfileField label="Blood Group" value={member.bloodGroup} />
-          <ProfileField label="Phone" value={member.phone} />
-          <ProfileField label="Email" value={member.email} />
-          <ProfileField label="Education" value={member.education} />
-          <ProfileField label="Address" value={member.address} full />
+          <ProfileField label="Mobile No" value={member.phone} />
+          <ProfileField label="Whatsapp No" value={member.whatsappNo} />
+          <ProfileField label="Office Landline" value={member.officeNo} />
+          <ProfileField label="Mail Id" value={member.email} />
+          <ProfileField label="Website" value={member.websiteUrl} />
+          <ProfileField label="Aadhar No" value={member.aadharNo} />
+          <ProfileField label="PAN No" value={member.panNo} />
         </ProfileSection>
 
         <ProfileSection title="Business Information" icon={Briefcase}>
-          <ProfileField label="Company Name" value={member.companyName || member.businessName} />
-          <ProfileField label="Business Type" value={member.businessType || member.category} />
-          <ProfileField label="Business Address" value={member.businessAddress} full />
-          <ProfileField label="Office Number" value={member.officeNo} />
-          <ProfileField label="Website" value={member.websiteUrl} />
-          <ProfileField label="Social Media" value={member.socialMedia} full />
-          <ProfileField label="Business Start Date" value={formatDate(member.businessStartDate)} />
-          <ProfileField label="Experience (years)" value={member.experienceYears} />
-          <ProfileField label="Business Expertise" value={member.businessExpertise} full />
-          <ProfileField label="Why should someone buy from you?" value={member.whyBuyFromYou} full />
-          <ProfileField label="About Business" value={member.aboutBusiness} full />
-          <ProfileField label="Business Mission" value={member.businessMission} full />
-          <ProfileField label="Business Vision" value={member.businessVision} full />
-          <ProfileField label="Flyer" value={member.flyer} />
+          <ProfileField label="Company Name" value={member.companyName} full />
+          <ProfileField label="Firm Type" value={member.firmType} />
+          <ProfileField label="Profession Details" value={member.professionDetails} />
+          <ProfileField label="Staff Working in Office" value={member.totalStaff} />
+          <ProfileField label="GST No" value={member.gstNo} />
+          <ProfileField label="Annual Turnover" value={member.annualTurnover} full />
+          <ProfileField label="Office Address" value={member.officeAddress} full />
         </ProfileSection>
 
-        <ProfileSection title="Membership Information" icon={IdCard}>
-          <ProfileField label="RID Number" value={member.ridNo} />
-          <ProfileField label="Joining Date" value={formatDate(member.joiningDate)} />
-          <ProfileField label="Status" value={member.status} />
-        </ProfileSection>
-
-        <ProfileSection title="Team & Sponsorship" icon={ShieldCheck}>
-          <ProfileField label="Power Team" value={member.powerTeam} />
-          <ProfileField label="Position" value={member.position} />
-          <ProfileField label="Director" value={member.director} />
-          <ProfileField label="Coordinator" value={member.coordinator} />
-          <ProfileField label="Introduced By" value={memberLabel(members, member.introducedBy)} />
-          <ProfileField label="Authenticated By" value={memberLabel(members, member.authenticatedBy)} />
-        </ProfileSection>
-
-        <ProfileSection title="Family Information" icon={Users}>
-          <ProfileField label="Father's Name" value={member.fatherName} />
-          <ProfileField label="Member Qualification" value={member.memberQualification} />
-          <ProfileField label="Wife Name" value={member.wifeName} />
-          <ProfileField label="Wife DOB" value={formatDate(member.wifeDob)} />
-          <ProfileField label="Wife Blood Group" value={member.wifeBloodGroup} />
-          <ProfileField label="Wife Qualification" value={member.wifeQualification} />
-          <ChildrenList title="Sons" children={member.sons} />
-          <ChildrenList title="Daughters" children={member.daughters} />
+        <ProfileSection title="BOREO Application & Clients" icon={FileCheck}>
+          <ProfileField
+            label="How do you know about BOREO ?"
+            value={
+              member.howDoYouKnow === "Others" && member.howDoYouKnowOthers
+                ? `Others (${member.howDoYouKnowOthers})`
+                : member.howDoYouKnow
+            }
+            full
+          />
+          <ProfileField label="Representing Category in BOREO" value={member.representingCategory} full />
+          <ProfileField label="Is Proxy Available" value={member.proxyAvailable} full />
+          <TopClientsList topClients={member.topClients} />
         </ProfileSection>
       </div>
     </div>

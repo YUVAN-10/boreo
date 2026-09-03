@@ -36,6 +36,18 @@ export const getVisitors = async (termId = null) => {
   }
 };
 
+export const getVisitor = async (id) => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) return null;
+    return { id: snap.id, ...snap.data() };
+  } catch (error) {
+    console.error("Error fetching visitor by ID:", error);
+    return null;
+  }
+};
+
 export const createVisitor = async (visitorData) => {
   try {
     const docRef = doc(collection(db, COLLECTION_NAME));

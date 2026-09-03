@@ -101,14 +101,14 @@ export default function MeetingForm({ initialData, onSubmit, onCancel, submitLab
           type="button"
           disabled={isSubmitting}
           onClick={onCancel}
-          className="rounded-xl border border-[#1E3A8A] px-5 py-2.5 text-xs font-semibold text-[#1E3A8A] hover:bg-blue-50 disabled:opacity-50 transition-colors"
+          className="rounded-xl border border-[#1E3A8A] px-5 py-2.5 text-xs font-semibold text-[#1E3A8A] hover:bg-blue-50 disabled:opacity-50 transition-colors cursor-pointer"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex items-center justify-center gap-2 rounded-xl bg-[#EA580C] px-6 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#c2410c] disabled:opacity-50 transition-all"
+          className="flex items-center justify-center gap-2 rounded-xl bg-[#EA580C] px-6 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#c2410c] disabled:opacity-50 transition-all cursor-pointer"
         >
           {isSubmitting ? (
             <>

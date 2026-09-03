@@ -5,7 +5,7 @@ import MemberAvatar from "./MemberAvatar";
 import MemberStatusBadge from "./MemberStatusBadge";
 import { updateMemberStatus } from "../../services/memberService";
 
-export default function MemberRow({ member, serialNo }) {
+export default function MemberRow({ member }) {
   const [statusSaving, setStatusSaving] = useState(false);
   const isActive = member.status === "Active";
   const memberId = member.uid || member.id;
@@ -27,7 +27,6 @@ export default function MemberRow({ member, serialNo }) {
 
   return (
     <tr className="border-b border-gray-100 transition-colors last:border-0 hover:bg-blue-50/30">
-      <td className="px-4 py-3 text-[#1E3A8A] font-semibold">{serialNo}</td>
       <td className="px-4 py-3">
         <MemberAvatar name={member.fullName} image={member.profileImage} size="sm" />
       </td>

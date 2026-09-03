@@ -17,7 +17,9 @@ import PowerTeamMeetings from "./pages/PowerTeamMeetings";
 import PowerTeamMeetingDetailsPage from "./pages/PowerTeamMeetingDetailsPage";
 import PowerTeamMeetingFormPage from "./pages/PowerTeamMeetingFormPage";
 import OneToOne from "./pages/OneToOne";
+import OneToOneDetailsPage from "./pages/OneToOneDetailsPage";
 import Visitors from "./pages/Visitors";
+import VisitorDetailsPage from "./pages/VisitorDetailsPage";
 import Referrals from "./pages/Referrals";
 import ReferralDetailsPage from "./pages/ReferralDetailsPage";
 import Settings from "./pages/Settings";
@@ -52,8 +54,11 @@ function App() {
               <Route path="/power-team-meetings/:id" element={<PowerTeamMeetingDetailsPage />} />
               <Route path="/power-team-meetings/:id/edit" element={<PowerTeamMeetingFormPage mode="edit" />} />
               <Route path="/one-to-one" element={<OneToOne />} />
+              <Route path="/one-to-one/:id" element={<OneToOneDetailsPage />} />
               <Route path="/r-to-r" element={<OneToOne />} />
+              <Route path="/r-to-r/:id" element={<OneToOneDetailsPage />} />
               <Route path="/visitors" element={<Visitors />} />
+              <Route path="/visitors/:id" element={<VisitorDetailsPage />} />
               <Route path="/referrals" element={<Referrals />} />
               <Route path="/referrals/:id" element={<ReferralDetailsPage />} />
               <Route path="/settings" element={<Settings />} />

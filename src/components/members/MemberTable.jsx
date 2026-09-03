@@ -1,7 +1,7 @@
 import MemberRow from "./MemberRow";
 import MemberCard from "./MemberCard";
 
-export default function MemberTable({ members, startSerialNo }) {
+export default function MemberTable({ members }) {
   return (
     <>
       {/* Desktop / tablet table */}
@@ -9,7 +9,6 @@ export default function MemberTable({ members, startSerialNo }) {
         <table className="w-full min-w-[720px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-border bg-bg text-left text-xs uppercase tracking-wide text-text-secondary">
-              <th className="px-4 py-3 font-medium">S.No</th>
               <th className="px-4 py-3 font-medium">Profile</th>
               <th className="px-4 py-3 font-medium">RID No</th>
               <th className="px-4 py-3 font-medium">Full Name</th>
@@ -20,8 +19,8 @@ export default function MemberTable({ members, startSerialNo }) {
             </tr>
           </thead>
           <tbody>
-            {members.map((member, index) => (
-              <MemberRow key={member.uid} member={member} serialNo={startSerialNo + index} />
+            {members.map((member) => (
+              <MemberRow key={member.uid} member={member} />
             ))}
           </tbody>
         </table>

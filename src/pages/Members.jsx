@@ -93,10 +93,7 @@ export default function Members() {
         <EmptyMembersState hasFilters={hasFilters} onClearFilters={handleClearFilters} />
       ) : (
         <div className="space-y-4 animate-fade-in">
-          <MemberTable
-            members={paginatedMembers}
-            startSerialNo={(currentPage - 1) * PAGE_SIZE + 1}
-          />
+          <MemberTable members={paginatedMembers} />
           <Pagination
             currentPage={currentPage}
             totalItems={filteredMembers.length}
